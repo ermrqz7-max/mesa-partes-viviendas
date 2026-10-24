@@ -1,4 +1,9 @@
 from modelo import PRIORIDAD
+from clasificacion import normalizar
+from tiempo import leer_fecha
+
+EQUIVALENCIAS = {"avenida": "av", "jiron": "jr", "manzana": "mz", "lote": "lt"}
+IGNORAR = ["n", "nro", "numero", "nº"]
 
 
 def va_antes(a, b):
@@ -29,3 +34,57 @@ def ordenar_por_codigo(solicitudes):
             j = j - 1
         lista[j + 1] = actual
     return lista
+
+
+def busqueda_binaria_codigo(lista_ordenada, codigo):
+    izq = 0
+    der = len(lista_ordenada) - 1
+    while izq <= der:
+        medio = (izq + der) // 2
+        actual = lista_ordenada[medio]["codigo"]
+        if actual == codigo:
+            return lista_ordenada[medio]
+        elif actual < codigo:
+            izq = medio + 1
+        else:
+            der = medio - 1
+    return None
+
+
+def busqueda_lineal_dni(solicitudes, dni):
+    encontrados = []
+    for s in solicitudes:
+        if s["dni"] == dni:
+            encontrados.append(s)
+    return encontrados
+
+
+def normalizar_direccion(direccion):
+    texto = normalizar(direccion)
+    limpio = ""
+    for c in texto:
+        if c.isalnum():
+            limpio += c
+        else:
+            limpio += " "
+    resultado = []
+    for palabra in limpio.split():
+        if palabra not in IGNORAR:
+            if palabra.isdigit():
+                palabra = str(int(palabra))
+            resultado.append(EQUIVALENCIAS.get(palabra, palabra))
+    return " ".join(resultado)
+
+
+def buscar_duplicado(solicitudes, direccion, tipo, fecha_desastre):
+    clave = normalizar_direccion(direccion)
+    fecha_nueva = leer_fecha(fecha_desastre)
+    for s in solicitudes:
+        if s["estado"] != "ATENDIDO":
+            fecha_s = leer_fecha(s["fecha_desastre"])
+            misma_direccion = normalizar_direccion(s["direccion"]) == clave
+            mismo_tipo = s["tipo"] == tipo
+            mismo_evento = abs((fecha_s - fecha_nueva).days) <= 7
+            if misma_direccion and mismo_tipo and mismo_evento:
+                return s
+    return None
