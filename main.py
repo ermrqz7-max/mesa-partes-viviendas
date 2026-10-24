@@ -1,4 +1,8 @@
 from servicio import MesaDePartes
+import argparse
+import csv
+import sys
+from persistencia import RUTA
 from modelo import TIPOS_DESASTRE, TRANSICIONES
 from faq import PREGUNTAS, buscar_preguntas, obtener_respuesta
 
@@ -24,8 +28,13 @@ def mostrar_solicitud(s, mesa):
     print("Estado:", s["estado"])
     print("Tipo:", s["tipo"], "| Fecha del desastre:", s["fecha_desastre"])
     print("Dirección:", s["direccion"], "-", s["sector"])
+    print("Descripción:", s["descripcion"])
     if s["observacion"] != "":
         print("Observación:", s["observacion"])
+    if s.get("historial"):
+        print("Historial del expediente:")
+        for cambio in s["historial"]:
+            print(" ", cambio["fecha"], "|", cambio["estado"], "|", cambio["observacion"])
 
 
 def opcion_registrar(mesa):
@@ -145,29 +154,43 @@ def mostrar_menu():
     print("0. Salir")
 
 
-def main():
-    mesa = MesaDePartes()
+def main(ruta=RUTA):
+    try:
+        mesa = MesaDePartes(ruta)
+    except (OSError, ValueError, csv.Error) as error:
+        print("No se pudo cargar el archivo:", error)
+        print("Revise el CSV antes de continuar. El archivo no fue modificado.")
+        return 1
+    print("Clasificación preliminar: no sustituye la evaluación técnica EDAN.")
     while True:
-        mostrar_menu()
-        opcion = pedir("Opción: ")
-        if opcion == "1":
-            opcion_registrar(mesa)
-        elif opcion == "2":
-            opcion_consultar(mesa)
-        elif opcion == "3":
-            opcion_bandeja(mesa)
-        elif opcion == "4":
-            opcion_estado(mesa)
-        elif opcion == "5":
-            opcion_resumen(mesa)
-        elif opcion == "6":
-            opcion_faq()
-        elif opcion == "0":
-            print("Hasta luego.")
-            break
-        else:
-            print("Opción no válida.")
+        try:
+            mostrar_menu()
+            opcion = pedir("Opción: ")
+            if opcion == "1":
+                opcion_registrar(mesa)
+            elif opcion == "2":
+                opcion_consultar(mesa)
+            elif opcion == "3":
+                opcion_bandeja(mesa)
+            elif opcion == "4":
+                opcion_estado(mesa)
+            elif opcion == "5":
+                opcion_resumen(mesa)
+            elif opcion == "6":
+                opcion_faq()
+            elif opcion == "0":
+                print("Hasta luego.")
+                return 0
+            else:
+                print("Opción no válida.")
+        except (OSError, ValueError, csv.Error) as error:
+            print("No se pudo completar la operación:", error)
+        except (EOFError, KeyboardInterrupt):
+            print("\nSesión finalizada. Se conservan las operaciones ya guardadas.")
+            return 0
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Mesa de Partes Digital - Viviendas")
+    parser.add_argument("--datos", default=RUTA, help="Ruta del CSV que se usará")
+    sys.exit(main(parser.parse_args().datos))
