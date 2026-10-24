@@ -13,6 +13,7 @@ def va_antes(a, b):
 
 
 def ordenar_por_prioridad(solicitudes):
+    """Inserción estable: mayor daño primero y luego fecha más antigua."""
     lista = list(solicitudes)
     for i in range(1, len(lista)):
         actual = lista[i]
@@ -25,6 +26,7 @@ def ordenar_por_prioridad(solicitudes):
 
 
 def ordenar_por_codigo(solicitudes):
+    """Prepara una copia ordenada para la búsqueda binaria."""
     lista = list(solicitudes)
     for i in range(1, len(lista)):
         actual = lista[i]
@@ -37,6 +39,7 @@ def ordenar_por_codigo(solicitudes):
 
 
 def busqueda_binaria_codigo(lista_ordenada, codigo):
+    """La precondición es recibir la lista ordenada por código ascendente."""
     izq = 0
     der = len(lista_ordenada) - 1
     while izq <= der:
@@ -52,6 +55,7 @@ def busqueda_binaria_codigo(lista_ordenada, codigo):
 
 
 def busqueda_lineal_dni(solicitudes, dni):
+    """Reúne todos los expedientes de un solicitante, no solo el primero."""
     encontrados = []
     for s in solicitudes:
         if s["dni"] == dni:
@@ -77,6 +81,7 @@ def normalizar_direccion(direccion):
 
 
 def buscar_duplicado(solicitudes, direccion, tipo, fecha_desastre):
+    """Vivienda y tipo iguales, hasta 7 días, expediente activo; el DNI no decide."""
     clave = normalizar_direccion(direccion)
     fecha_nueva = leer_fecha(fecha_desastre)
     for s in solicitudes:
