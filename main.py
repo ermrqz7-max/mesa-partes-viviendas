@@ -31,7 +31,7 @@ def mostrar_solicitud(s, mesa):
 def opcion_registrar(mesa):
     print("\n--- Registrar solicitud ---")
     datos = {
-        "dni": pedir("DNI (8 dígitos): "),
+        "dni": pedir("\nDNI (8 dígitos): "),
         "nombres": pedir("Nombres y apellidos: "),
         "telefono": pedir("Celular (9 dígitos, empieza en 9): "),
         "direccion": pedir("Dirección de la vivienda: "),
