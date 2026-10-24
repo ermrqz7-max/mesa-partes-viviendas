@@ -8,13 +8,15 @@ CAMPOS_OBLIGATORIOS = [
 
 
 def es_dni_valido(dni):
+    """Comprueba el formato; no consulta la existencia del DNI."""
     dni = dni.strip()
-    return len(dni) == 8 and dni.isdigit()
+    return len(dni) == 8 and dni.isascii() and dni.isdigit()
 
 
 def es_telefono_valido(telefono):
     telefono = telefono.strip()
-    return len(telefono) == 9 and telefono.isdigit() and telefono[0] == "9"
+    return (len(telefono) == 9 and telefono.isascii()
+            and telefono.isdigit() and telefono.startswith("9"))
 
 
 def validar_fecha_desastre(texto):

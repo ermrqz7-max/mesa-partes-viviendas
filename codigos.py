@@ -21,4 +21,6 @@ def generar_codigo(solicitudes, anio=None):
     while existe_codigo(solicitudes, codigo):
         numero += 1
         codigo = f"MPV-{anio}-{numero:04d}"
+    if numero > 9999:
+        raise ValueError("Se agotaron los 9999 códigos disponibles para este año.")
     return codigo
