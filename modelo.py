@@ -27,4 +27,6 @@ def crear_solicitud(codigo, datos, nivel, fecha_registro):
         "estado": "PENDIENTE",
         "observacion": "",
         "fecha_registro": fecha_registro,
+        "historial": [{"estado": "PENDIENTE", "fecha": fecha_registro,
+                       "observacion": "Registro inicial de la solicitud"}],
     }

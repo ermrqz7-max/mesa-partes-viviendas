@@ -1,4 +1,5 @@
 import persistencia
+from copy import deepcopy
 from modelo import crear_solicitud, TRANSICIONES, NIVELES, ESTADOS
 from tiempo import ahora
 from validacion import validar_solicitud
@@ -32,8 +33,10 @@ class MesaDePartes:
         codigo = generar_codigo(self.solicitudes)
         fecha_registro = ahora().strftime("%Y-%m-%d %H:%M:%S")
         s = crear_solicitud(codigo, limpios, nivel, fecha_registro)
-        self.solicitudes.append(s)
-        persistencia.guardar(self.solicitudes, self.ruta)
+        # Guardar primero evita confirmar un registro que no pudo persistirse.
+        nuevas = self.solicitudes + [s]
+        persistencia.guardar(nuevas, self.ruta)
+        self.solicitudes = nuevas
         return {"ok": True, "solicitud": s}
 
     def consultar_por_codigo(self, codigo):
@@ -57,9 +60,19 @@ class MesaDePartes:
         nuevo = nuevo.strip().upper()
         if nuevo not in TRANSICIONES[s["estado"]]:
             return "No se puede pasar de " + s["estado"] + " a " + nuevo + "."
-        s["estado"] = nuevo
-        s["observacion"] = observacion.strip()
-        persistencia.guardar(self.solicitudes, self.ruta)
+        nuevas = deepcopy(self.solicitudes)
+        for copia in nuevas:
+            if copia["codigo"] == s["codigo"]:
+                copia["estado"] = nuevo
+                copia["observacion"] = observacion.strip()
+                copia.setdefault("historial", []).append({
+                    "estado": nuevo,
+                    "fecha": ahora().strftime("%Y-%m-%d %H:%M:%S"),
+                    "observacion": observacion.strip(),
+                })
+                break
+        persistencia.guardar(nuevas, self.ruta)
+        self.solicitudes = nuevas
         return ""
 
     def plazo_estimado(self, s):
